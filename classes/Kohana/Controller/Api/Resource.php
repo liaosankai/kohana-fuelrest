@@ -36,6 +36,9 @@ abstract class Kohana_Controller_Api_Resource extends Controller_Rest {
     {
         parent::before();
 
+        // 接收以 GET 模式改變語系設定
+        I18n::lang(Arr::get($_GET, 'lang', 'en'));
+
         //嘗試建立 ORM 模型物件
         $this->_model = ORM::factory($this->_model_name);
     }

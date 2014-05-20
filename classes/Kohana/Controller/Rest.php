@@ -61,29 +61,6 @@ abstract class Kohana_Controller_Rest extends Kohana_Controller {
      */
     public function execute()
     {
-
-
-        // 先處理以 RAW 的 JSON 傳入的資料
-        $json = json_decode($this->request->body(), TRUE);
-        $json = is_array($json) ? $json : array();
-
-        // 再處理以 form-data 或 x-www-form-urlencode 傳入的資料
-        // 並與 RAW 的資料合併
-        switch ($this->request->method()) {
-            case 'PUT':
-            case 'PATCH':
-            case 'DELETE':
-                parse_str($this->request->body(), $_POST);
-                $_POST = array_merge($json, $_POST);
-                break;
-            case 'POST':
-                $_POST = array_merge($json, $_POST);
-            default:
-                break;
-        }
-
-        $_REQUEST = array_merge($_POST, $_GET);
-
         // 以 method 為前綴搜尋 action
         $action = strtolower($this->request->method() . "_" . $this->request->action());
 
@@ -95,7 +72,7 @@ abstract class Kohana_Controller_Rest extends Kohana_Controller {
             $this->_action = 'action_' . $this->request->action();
             $this->method = 'action';
         }
-        // 取得參數集合
+        // 取得路由參數集合
         $params = $this->request->param();
 
         // 取出其中的 format 格式參數
@@ -103,6 +80,7 @@ abstract class Kohana_Controller_Rest extends Kohana_Controller {
 
         // 在執行 action 之前，呼叫前置函式
         $this->before();
+        
         // 若 action 存在就執行，不存在呼叫 action_not_fount() 進行處理
         if (method_exists($this, $this->_action)) {
             $this->content = call_user_func_array(array($this, $this->_action), $params);

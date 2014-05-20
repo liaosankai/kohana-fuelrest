@@ -37,7 +37,7 @@ abstract class Kohana_Controller_Api_Resource extends Controller_Rest {
         parent::before();
 
         // 接收以 GET 模式改變語系設定
-        I18n::lang(Arr::get($_GET, 'lang', 'en'));
+        I18n::lang($this->request->get('lang'));
 
         //嘗試建立 ORM 模型物件
         $this->_model = ORM::factory($this->_model_name);
@@ -70,15 +70,14 @@ abstract class Kohana_Controller_Api_Resource extends Controller_Rest {
      * @param int $id 資源識別碼
      * @return array
      */
-    public function get_read($id = NULL)
-    {
-        return $this->get_index($id);
-    }
-
     public function get_index($id = NULL)
     {
+        return $this->get_read($id);
+    }
 
-        $id = Arr::get($_REQUEST, 'id', $id);
+    public function get_read($id = NULL)
+    {
+        $id = $this->request->get('id');
 
         //若有指定資源識別碼僅回傳單一筆資料
         if (is_numeric($id)) {
@@ -109,12 +108,12 @@ abstract class Kohana_Controller_Api_Resource extends Controller_Rest {
      *
      * @return array
      */
-    public function post_create()
+    public function post_index()
     {
-        return $this->post_index();
+        return $this->post_create();
     }
 
-    public function post_index()
+    public function post_create()
     {
         try {
             $this->before_create();
@@ -148,15 +147,14 @@ abstract class Kohana_Controller_Api_Resource extends Controller_Rest {
      * @param int $id 資源識別碼
      * @return array
      */
-    public function put_update($id = NULL)
-    {
-        $data = $this->put_index($id);
-        return $data;
-    }
-
     public function put_index($id = NULL)
     {
-        $_PUT = $_REQUEST;
+        return $this->put_update($id);
+    }
+
+    public function put_update($id = NULL)
+    {
+        $_PUT = $this->request->put();
         try {
             $id = Arr::get($_PUT, 'id', $id);
             $this->_model->where("{$this->_model->object_name()}.id", '=', $id)->find();
@@ -193,15 +191,14 @@ abstract class Kohana_Controller_Api_Resource extends Controller_Rest {
      * @param int $id 資源識別碼
      * @return array
      */
-    public function delete_delete($id = NULL)
-    {
-        return $this->delete_index($id);
-    }
-
     public function delete_index($id = NULL)
     {
+        return $this->delete_delete($id);
+    }
 
-        $_DELETE = $_REQUEST;
+    public function delete_delete($id = NULL)
+    {
+        $_DELETE = $this->request->delete();
 
         try {
             $id = Arr::get($_DELETE, 'id', $id);
